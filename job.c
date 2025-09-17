@@ -15,7 +15,7 @@ typedef struct{
 }Applicant;
 
 typedef struct{
-    Applicant arr[MAX_APP];
+    Applicant arr[MAX_APP]; //array ของ Applicant
     int count;//จำนวนผู้ใช้งาน
 } Store;
 //ตัด \n กับ \r ตอนใช้ fgets
@@ -28,13 +28,13 @@ void cut(char *s){
 }
 void check_csv(){
     FILE *f = fopen(CSV_FILE,"r");
-    if(f){
+    if(f){//มีไฟล์อยู่แล้ว
         fclose(f);
         return;
     }
     f = fopen(CSV_FILE,"w");
-    if (!f) { perror("create csv"); exit(1); }
-    fprintf(f,"ApplicantName,JobPosition,Email,PhoneNumber\n");
+    if (!f) { perror("create csv"); exit(1); }//ไม่มีไฟล์
+    fprintf(f,"ApplicantName,JobPosition,Email,PhoneNumber\n");//header
     fclose(f);
 }
 void load_csv(Store *st){
@@ -50,21 +50,21 @@ void load_csv(Store *st){
         cut(line);
         if(line_no++ ==0) continue;//ข้าม header
         if(line[0]=='\0') continue; //ข้ามบรรทัดว่าง
-        if(st->count >= MAX_APP) break;
-
+        if(st->count >= MAX_APP) break;//ถ้าพ้อยเตอร์ที่ชี้ไปยัง count >= MAX_APP จะหยุดทำงานทันที
+        //แบ่งคอลัมด้วย ,
         char *name     = strtok(line, ",");
         char *position = strtok(NULL, ",");
         char *email    = strtok(NULL, ",");
         char *phone    = strtok(NULL, ",");
-
-        if (!name || !position || !email || !phone) continue;
+    
+        if (!name || !position || !email || !phone) continue;//ตรวจสอบ format ของ input ถ้าไม่ตรงจะข้าม
 
         Applicant *a = &st->arr[st->count];
         snprintf(a->name,     sizeof(a->name),     "%s", name); //snprinf จะกำหนด size ของ string ทำให้กัน buff overflow
         snprintf(a->position, sizeof(a->position), "%s", position);
         snprintf(a->email,    sizeof(a->email),    "%s", email);
         snprintf(a->phone,    sizeof(a->phone),    "%s", phone);
-        st->count++;
+        st->count++;//บวกเพิ่มตามบรรทัดที่อ่านเจอ
     }
     fclose(f);
 
@@ -74,7 +74,7 @@ void save_csv(const Store *st){
     if(!f){ perror("save csv"); exit(1); }
 
     fprintf(f, "ApplicantName,JobPosition,Email,PhoneNumber\n");
-    for(int i = 0;i<st->count;++i){
+    for(int i = 0;i<st->count;++i){//ลูบข้อมูลแต่ละคนจนกว่าจะเป็นเท็จ
         fprintf(f, "%s,%s,%s,%s\n",
             st->arr[i].name,
             st->arr[i].position,
@@ -97,7 +97,7 @@ void add_applicant(Store *st){
 
     printf("Enter Phone Number: ");
     scanf(" %39[^\n]", a.phone);       
-
+//สมมติมีข้อมูลคน 2 คน count จะเป็น 2 เมื่อ add ข้อมูลจะถูกเก็บใน arr[2] และ count เพิ่มเป็น3
     st->arr[st->count++] = a;          
     save_csv(st);                      
     puts("Added and saved.");
@@ -111,7 +111,7 @@ void search_applicant(Store *st){
     puts("\n-- Results --");
     int found = 0;
     for(int i = 0; i < st->count; i++){
-        if (strstr(st->arr[i].name, q) || strstr(st->arr[i].position, q)){
+        if (strstr(st->arr[i].name, q) || strstr(st->arr[i].position, q)){//strstr ใช้ค้นหารูปแบบในสตริง
             printf("%d) %s | %s | %s | %s\n",
                    i+1,
                    st->arr[i].name,
@@ -127,11 +127,11 @@ void search_applicant(Store *st){
 void update_applicant(Store *st) {
     char q[LINE_LEN];
     printf("Enter applicant name to update: ");
-    scanf(" %511[^\n]", q);   // รับชื่อที่ต้องการค้นหา
+    scanf(" %511[^\n]", q);   //รับชื่อที่ต้องการค้นหา
 
     int i;
     for (i = 0; i < st->count; i++) {
-        if (strcmp(st->arr[i].name, q) == 0) {   // เทียบชื่อแบบตรง ๆ
+        if (strcmp(st->arr[i].name, q) == 0) {   //เทียบชื่อแบบตรงๆ
             printf("Found: %s | %s | %s | %s\n",
                    st->arr[i].name,
                    st->arr[i].position,
@@ -162,11 +162,11 @@ void update_applicant(Store *st) {
 void delete_applicant(Store *st) {
     char q[LINE_LEN];
     printf("Enter applicant name to delete: ");
-    scanf(" %511[^\n]", q);   // รับชื่อที่จะลบ
+    scanf(" %511[^\n]", q); //รับชื่อที่จะลบ
 
     int i;
     for (i = 0; i < st->count; i++) {
-        if (strcmp(st->arr[i].name, q) == 0) {   // เทียบชื่อแบบตรง ๆ
+        if (strcmp(st->arr[i].name, q) == 0) { //เทียบชื่อแบบตรงๆ
             printf("Deleting: %s | %s | %s | %s\n",
                    st->arr[i].name,
                    st->arr[i].position,
