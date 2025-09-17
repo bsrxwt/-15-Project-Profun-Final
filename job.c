@@ -3,7 +3,7 @@
 #include <string.h>
 //Macro
 #define CSV_FILE "applicants.csv"
-#define MAX_APP 100
+#define MAX_APP 100//จำนวนผู้สมัคร
 #define LINE_LEN 512
 
 //ป้องกัน buff overflow
@@ -16,15 +16,14 @@ typedef struct{
 
 typedef struct{
     Applicant arr[MAX_APP];
-    int count;
+    int count;//จำนวนผู้ใช้งาน
 } Store;
-//ตัด \n ตอนใช้ fgets
+//ตัด \n กับ \r ตอนใช้ fgets
 void cut(char *s){
-    if(!s)
-    return;
-    size_t n =strlen(s);
-    while(n&&(s[n-1]=='\n')){
-        s[n--]= '\0';
+    if(!s) return;
+    size_t n = strlen(s);
+    while (n && (s[n-1] == '\n' || s[n-1] == '\r')) {
+        s[--n] = '\0';  
     }
 }
 void check_csv(){
@@ -39,6 +38,7 @@ void check_csv(){
     fclose(f);
 }
 void load_csv(Store *st){
+    st->count=0;
     check_csv();
 
     FILE *f = fopen(CSV_FILE, "r");
@@ -51,7 +51,20 @@ void load_csv(Store *st){
         if(line_no++ ==0) continue;//ข้าม header
         if(line[0]=='\0') continue; //ข้ามบรรทัดว่าง
         if(st->count >= MAX_APP) break;
-        
+
+        char *name     = strtok(line, ",");
+        char *position = strtok(NULL, ",");
+        char *email    = strtok(NULL, ",");
+        char *phone    = strtok(NULL, ",");
+
+        if (!name || !position || !email || !phone) continue;
+
+        Applicant *a = &st->arr[st->count];
+        snprintf(a->name,     sizeof(a->name),     "%s", name); //snprinf จะกำหนด size ของ string ทำให้กัน buff overflow
+        snprintf(a->position, sizeof(a->position), "%s", position);
+        snprintf(a->email,    sizeof(a->email),    "%s", email);
+        snprintf(a->phone,    sizeof(a->phone),    "%s", phone);
+        st->count++;
     }
     fclose(f);
 
@@ -62,21 +75,117 @@ void save_csv(const Store *st){
 
     fprintf(f, "ApplicantName,JobPosition,Email,PhoneNumber\n");
     for(int i = 0;i<st->count;++i){
-        fprintf(f, "%s,%s,%s,%s\n",st->arr[i].name,st->arr[i].position,st->arr[i].email,st->arr[i].phone);
+        fprintf(f, "%s,%s,%s,%s\n",
+            st->arr[i].name,
+            st->arr[i].position,
+            st->arr[i].email,
+            st->arr[i].phone);
     }
     fclose(f);
 }
-void add_applicant(){
-    printf("1\n");
+void add_applicant(Store *st){
+    Applicant a;
+
+    printf("Enter Applicant Name: ");
+    scanf(" %99[^\n]", a.name);        
+
+    printf("Enter Job Position: ");
+    scanf(" %99[^\n]", a.position);    
+
+    printf("Enter Email: ");
+    scanf(" %119[^\n]", a.email);      
+
+    printf("Enter Phone Number: ");
+    scanf(" %39[^\n]", a.phone);       
+
+    st->arr[st->count++] = a;          
+    save_csv(st);                      
+    puts("Added and saved.");
 }
-void search_applicant(){
-    printf("2\n");
+void search_applicant(Store *st){
+    char q[LINE_LEN];
+
+    printf("Search by name or position: ");
+    scanf(" %511[^\n]", q);  
+
+    puts("\n-- Results --");
+    int found = 0;
+    for(int i = 0; i < st->count; i++){
+        if (strstr(st->arr[i].name, q) || strstr(st->arr[i].position, q)){
+            printf("%d) %s | %s | %s | %s\n",
+                   i+1,
+                   st->arr[i].name,
+                   st->arr[i].position,
+                   st->arr[i].email,
+                   st->arr[i].phone);
+            found = 1;
+        }
+    }
+    if(!found) puts("No match found.");
+    puts("--------------");
 }
-void update_applicant(){
-    printf("3\n");
+void update_applicant(Store *st) {
+    char q[LINE_LEN];
+    printf("Enter applicant name to update: ");
+    scanf(" %511[^\n]", q);   // รับชื่อที่ต้องการค้นหา
+
+    int i;
+    for (i = 0; i < st->count; i++) {
+        if (strcmp(st->arr[i].name, q) == 0) {   // เทียบชื่อแบบตรง ๆ
+            printf("Found: %s | %s | %s | %s\n",
+                   st->arr[i].name,
+                   st->arr[i].position,
+                   st->arr[i].email,
+                   st->arr[i].phone);
+
+            // กรอกข้อมูลใหม่ทั้งหมด
+            printf("Enter new name: ");
+            scanf(" %99[^\n]", st->arr[i].name);
+
+            printf("Enter new position: ");
+            scanf(" %99[^\n]", st->arr[i].position);
+
+            printf("Enter new email: ");
+            scanf(" %119[^\n]", st->arr[i].email);
+
+            printf("Enter new phone: ");
+            scanf(" %39[^\n]", st->arr[i].phone);
+
+            save_csv(st);   // บันทึกกลับไฟล์ทันที
+            puts("Updated and saved.");
+            return;
+        }
+    }
+
+    puts("Applicant not found.");
 }
-void delete_applicant(){
-    printf("4\n");
+void delete_applicant(Store *st) {
+    char q[LINE_LEN];
+    printf("Enter applicant name to delete: ");
+    scanf(" %511[^\n]", q);   // รับชื่อที่จะลบ
+
+    int i;
+    for (i = 0; i < st->count; i++) {
+        if (strcmp(st->arr[i].name, q) == 0) {   // เทียบชื่อแบบตรง ๆ
+            printf("Deleting: %s | %s | %s | %s\n",
+                   st->arr[i].name,
+                   st->arr[i].position,
+                   st->arr[i].email,
+                   st->arr[i].phone);
+
+            // เลื่อนสมาชิกถัดไปทั้งหมดขึ้นมาทับ
+            for (int j = i; j < st->count - 1; j++) {
+                st->arr[j] = st->arr[j + 1];
+            }
+            st->count--;
+
+            save_csv(st);   // บันทึกกลับไฟล์ทันที
+            puts("Deleted and saved.");
+            return;
+        }
+    }
+
+    puts("Applicant not found.");
 }
 void DisplayAll(const Store *st){
     printf("\n=== Applicants (%d) ===\n", st->count);
@@ -100,6 +209,7 @@ void display_menu(){
     printf("6)Exit\n");   
     printf("SELECT:"); 
 }
+
 int main(){
     Store st;
     load_csv(&st);
@@ -108,20 +218,19 @@ int main(){
     display_menu();
     int i;
     scanf("%d",&i);//input ตัวอักษรแล้วพัง
-    getchar();
             switch (i)
             {
             case 1: 
-                add_applicant();
+                add_applicant(&st);
                 break;       
             case 2: 
-                search_applicant(); 
+                search_applicant(&st); 
                 break;   
             case 3: 
-                update_applicant(); 
+                update_applicant(&st); 
                 break;   
             case 4: 
-                delete_applicant(); 
+                delete_applicant(&st); 
                 break;   
             case 5:
                 DisplayAll(&st);
