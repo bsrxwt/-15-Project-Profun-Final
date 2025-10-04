@@ -171,7 +171,13 @@ void search_applicant(Store *st){
     char q[LINE_LEN];
     printf("Search by name or position: ");
     if (!fgets(q, sizeof(q), stdin)) return;
-    cut(q); trim(q);
+    cut(q); trim(q); 
+    if (q[0] == '\0') {
+        puts("===========================================");
+        puts("Please enter a non-empty keyword to search.");
+        puts("===========================================");
+        return; 
+    }
     int num[MAX_APP];
     puts("-- Results --");
     (void)list_matches(st, num, q);
