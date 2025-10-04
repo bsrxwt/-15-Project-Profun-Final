@@ -104,7 +104,7 @@ void add_applicant(Store *st){
     //รับชื่อ
     char buf[LINE_LEN];
     printf("Enter Applicant Name: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)) return;
+    if (!fgets(buf, sizeof(buf), stdin)) return;//
     cut(buf); trim(buf);
     strncpy(a.name, buf, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
     // รับตำแหน่ง
@@ -129,9 +129,9 @@ void add_applicant(Store *st){
 }
 void search_applicant(Store *st){
     char q[LINE_LEN];
-
     printf("Search by name or position: ");
-    scanf(" %511[^\n]", q);  
+    if (!fgets(q, sizeof(q), stdin)) return;
+    cut(q); trim(q);
 
     puts("\n-- Results --");
     int found = 0;
