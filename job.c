@@ -206,6 +206,8 @@ void display_menu(){
     printf("3)Update\n");
     printf("4)Delete\n");
     printf("5)Display\n");
+    printf("6)Unit Test\n");
+    printf("7)E2E Test\n");
     printf("6)Exit\n");   
     printf("SELECT:"); 
 }
@@ -217,7 +219,10 @@ int main(){
     while(1){
     display_menu();
     int i;
-    scanf("%d",&i);//input ตัวอักษรแล้วพัง
+    if(scanf("%d",&i)!=1){
+        puts("\nInvalid input");
+    }
+    getchar();
             switch (i)
             {
             case 1: 
