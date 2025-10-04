@@ -208,7 +208,7 @@ void display_menu(){
     printf("5)Display\n");
     printf("6)Unit Test\n");
     printf("7)E2E Test\n");
-    printf("6)Exit\n");   
+    printf("8)Exit\n");   
     printf("SELECT:"); 
 }
 
@@ -218,11 +218,14 @@ int main(){
 
     while(1){
     display_menu();
-    int i;
+    int i=0;
+    int c;
     if(scanf("%d",&i)!=1){
-        puts("\nInvalid input");
+        puts("\nPlease input number.");
+            while ((c = getchar()) != '\n' && c != EOF) {} //ล้าง buffer เมื่อ if ทำงาน
+            continue;
     }
-    getchar();
+            while ((c = getchar()) != '\n' && c != EOF) {}//ล้าง \n จาก enter
             switch (i)
             {
             case 1: 
@@ -240,10 +243,14 @@ int main(){
             case 5:
                 DisplayAll(&st);
                 break;
-            case 6: 
+            case 6:
+                
+            case 7:
+
+            case 8: 
                 puts("Bye!"); 
                 return 0;          
-            default: puts("Please choose 1-6");
+            default: puts("Please choose 1-8");
             }
         }
     return 0;
