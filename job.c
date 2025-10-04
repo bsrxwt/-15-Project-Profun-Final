@@ -127,26 +127,54 @@ void add_applicant(Store *st){
     save_csv(st);                      
     puts("Added and saved.");
 }
+//Search Structure
+int nocase_ncmp(const char *a, const char *b, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        unsigned char ca = (unsigned char)a[i];
+        unsigned char cb = (unsigned char)b[i];
+        if (ca == '\0') return (cb == '\0') ? 0 : 0 - cb; 
+        
+        int da = tolower(ca);
+        int db = tolower(cb);
+        if (da != db) return da - db;
+    }
+    return 0;
+}
+char* strcasestr_local(const char *hay, const char *needle) {
+    if (!hay || !needle || !*needle) return (char*)hay;
+    size_t nlen = strlen(needle);
+    for (const char *p = hay; *p; ++p) {
+        if (tolower((unsigned char)*p) == tolower((unsigned char)*needle)) {
+            if (nocase_ncmp(p, needle, nlen) == 0) return (char*)p;
+        }
+    }
+    return NULL;
+}
+int list_matches(const Store *st, int *num, const char *q) {
+    int m = 0;
+    for (int i = 0; i < st->count; ++i) {
+        if (strcasestr_local(st->arr[i].name, q) || strcasestr_local(st->arr[i].position, q)){
+            if(m>=MAX_APP) break;
+            num[m++] = i;
+            printf("%d) %s | %s | %s | %s\n",
+                   m,
+                   st->arr[i].name,
+                   st->arr[i].position,
+                   st->arr[i].email,
+                   st->arr[i].phone);
+        }
+    }
+    if (m == 0) printf("No matches.\n");
+    return m;
+}
 void search_applicant(Store *st){
     char q[LINE_LEN];
     printf("Search by name or position: ");
     if (!fgets(q, sizeof(q), stdin)) return;
     cut(q); trim(q);
-
-    puts("\n-- Results --");
-    int found = 0;
-    for(int i = 0; i < st->count; i++){
-        if (strstr(st->arr[i].name, q) || strstr(st->arr[i].position, q)){//strstr ใช้ค้นหารูปแบบในสตริง
-            printf("%d) %s | %s | %s | %s\n",
-                   i+1,
-                   st->arr[i].name,
-                   st->arr[i].position,
-                   st->arr[i].email,
-                   st->arr[i].phone);
-            found = 1;
-        }
-    }
-    if(!found) puts("No match found.");
+    int num[MAX_APP];
+    puts("-- Results --");
+    (void)list_matches(st, num, q);
     puts("--------------");
 }
 void update_applicant(Store *st) {
