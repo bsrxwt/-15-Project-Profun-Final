@@ -1,18 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 //Macro
 #define CSV_FILE "applicants.csv"
 #define MAX_APP 100//จำนวนผู้สมัคร
 #define LINE_LEN 512
-
+#define NAME_LEN 100
+#define POS_LEN 100
+#define EMAIL_LEN 120
+#define PHONE_LEN 40
 //ป้องกัน buff overflow
-typedef struct{
-    char name[100];
-    char position[100];
-    char email[120];
-    char phone[40];
-}Applicant;
+typedef struct {
+    char name[NAME_LEN];       
+    char position[POS_LEN];    
+    char email[EMAIL_LEN];     
+    char phone[PHONE_LEN];     
+} Applicant;
 
 typedef struct{
     Applicant arr[MAX_APP]; //array ของ Applicant
@@ -25,6 +29,14 @@ void cut(char *s){
     while (n && (s[n-1] == '\n' || s[n-1] == '\r')) {
         s[--n] = '\0';  
     }
+}
+static void trim(char *s) {//ตัด whitespace
+    if (!s) return; 
+    char *p = s;//ตัดหัว
+    while (*p && isspace((unsigned char)*p)) p++;
+    if (p != s) memmove(s, p, strlen(p) + 1);
+    size_t n = strlen(s);//ตัดท้าย
+    while (n && isspace((unsigned char)s[n-1])) s[--n] = '\0';
 }
 void check_csv(){
     FILE *f = fopen(CSV_FILE,"r");
@@ -84,19 +96,32 @@ void save_csv(const Store *st){
     fclose(f);
 }
 void add_applicant(Store *st){
+    if(st->count >= MAX_APP){ //ถ้าผู้สมัครเกิน 100 คน
+        printf("Storage full.\n");
+        return;
+    }
     Applicant a;
-
-    printf("Enter Applicant Name: ");
-    scanf(" %99[^\n]", a.name);        
-
-    printf("Enter Job Position: ");
-    scanf(" %99[^\n]", a.position);    
-
-    printf("Enter Email: ");
-    scanf(" %119[^\n]", a.email);      
-
-    printf("Enter Phone Number: ");
-    scanf(" %39[^\n]", a.phone);       
+    //รับชื่อ
+    char buf[LINE_LEN];
+    printf("Enter Applicant Name: "); fflush(stdout);
+    if (!fgets(buf, sizeof(buf), stdin)) return;
+    cut(buf); trim(buf);
+    strncpy(a.name, buf, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
+    // รับตำแหน่ง
+    printf("Enter Job Position: "); fflush(stdout);
+    if (!fgets(buf, sizeof(buf), stdin)) return;
+    cut(buf); trim(buf);
+    strncpy(a.position, buf, POS_LEN - 1); a.position[POS_LEN - 1] = '\0';
+    // รับอีเมล
+    printf("Enter Email: "); fflush(stdout);
+    if (!fgets(buf, sizeof(buf), stdin)) return;
+    cut(buf); trim(buf);
+    strncpy(a.email, buf, EMAIL_LEN - 1); a.email[EMAIL_LEN - 1] = '\0';
+    // รับเบอร์โทร
+    printf("Enter Phone Number: "); fflush(stdout);
+    if (!fgets(buf, sizeof(buf), stdin)) return;
+    cut(buf); trim(buf);
+    strncpy(a.phone, buf, PHONE_LEN - 1); a.phone[PHONE_LEN - 1] = '\0';    
 //สมมติมีข้อมูลคน 2 คน count จะเป็น 2 เมื่อ add ข้อมูลจะถูกเก็บใน arr[2] และ count เพิ่มเป็น3
     st->arr[st->count++] = a;          
     save_csv(st);                      
