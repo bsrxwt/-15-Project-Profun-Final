@@ -95,6 +95,7 @@ void save_csv(const Store *st){
     }
     fclose(f);
 }
+/*ต้องแก้ทุก input ยังรับ enter ได้*/
 void add_applicant(Store *st){
     if(st->count >= MAX_APP){ //ถ้าผู้สมัครเกิน 100 คน
         printf("Storage full.\n");
@@ -104,7 +105,7 @@ void add_applicant(Store *st){
     //รับชื่อ
     char buf[LINE_LEN];
     printf("Enter Applicant Name: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)) return;//
+    if (!fgets(buf, sizeof(buf), stdin)) return;
     cut(buf); trim(buf);
     strncpy(a.name, buf, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
     // รับตำแหน่ง
@@ -179,44 +180,83 @@ void search_applicant(Store *st){
         return; 
     }
     int num[MAX_APP];
-    puts("-- Results --");
+    puts("== Results ==");
     (void)list_matches(st, num, q);
-    puts("--------------");
+    puts("=============");
 }
-void update_applicant(Store *st) {
+static void update_applicant(Store *st) {
     char q[LINE_LEN];
-    printf("Enter applicant name to update: ");
-    scanf(" %511[^\n]", q);   //รับชื่อที่ต้องการค้นหา
+    printf("Search (name or position) to update: ");
+    if (!fgets(q, sizeof(q), stdin)) return;
+    cut(q); trim(q);
 
-    int i;
-    for (i = 0; i < st->count; i++) {
-        if (strcmp(st->arr[i].name, q) == 0) {   //เทียบชื่อแบบตรงๆ
-            printf("Found: %s | %s | %s | %s\n",
-                   st->arr[i].name,
-                   st->arr[i].position,
-                   st->arr[i].email,
-                   st->arr[i].phone);
+    if (q[0] == '\0') {
+        puts("===========================================");
+        puts("Please enter a non-empty keyword to search.");
+        puts("===========================================");
+        return; 
+    }
 
-            // กรอกข้อมูลใหม่ทั้งหมด
-            printf("Enter new name: ");
-            scanf(" %99[^\n]", st->arr[i].name);
+    int num[MAX_APP];
+    puts("== Results ==");
+    int m = list_matches(st, num, q);
+    puts("=============");
+    if (m <= 0) return;
 
-            printf("Enter new position: ");
-            scanf(" %99[^\n]", st->arr[i].position);
+    printf("Select number to update (1-%d): ", m);
+    char pick[LINE_LEN];
+    if (!fgets(pick, sizeof(pick), stdin)){
+        puts("Invalid Input."); 
+        return; 
+    }
+    cut(q); trim(q);
 
-            printf("Enter new email: ");
-            scanf(" %119[^\n]", st->arr[i].email);
-
-            printf("Enter new phone: ");
-            scanf(" %39[^\n]", st->arr[i].phone);
-
-            save_csv(st);   // บันทึกกลับไฟล์ทันที
-            puts("Updated and saved.");
-            return;
+    int pick_num = atoi(pick);
+    if (pick_num < 1 || pick_num > m) {
+        puts("======================================="); 
+        printf("Invalid Input Must be between 1 and %d.\n", m); 
+        puts("=======================================");
+        return; 
+    }
+    int i = num[pick_num - 1];
+/*Update fields+choice แก้การรับ enter CTRL+Z*/
+    printf("Update fields: 1)Name 2)Position 3)Email 4)Phone 5)All : ");
+    int choice = 0;
+    if (scanf("%d", &choice) != 1) { puts("Invalid."); return; }
+    getchar();
+/*ยังไม่ป้องกันinputที่ไม่ใช่choice 1-5*/
+    char buf[LINE_LEN];
+    if (choice == 1 || choice == 5) {
+        printf("New Name: "); if (fgets(buf, sizeof(buf), stdin)) {
+            cut(buf); trim(buf);
+            strncpy(st->arr[i].name, buf, NAME_LEN - 1);
+            st->arr[i].name[NAME_LEN - 1] = '\0';
+        }
+    }
+    if (choice == 2 || choice == 5) {
+        printf("New Position: "); if (fgets(buf, sizeof(buf), stdin)) {
+            cut(buf); trim(buf);
+            strncpy(st->arr[i].position, buf, POS_LEN - 1);
+            st->arr[i].position[POS_LEN - 1] = '\0';
+        }
+    }
+    if (choice == 3 || choice == 5) {
+        printf("New Email: "); if (fgets(buf, sizeof(buf), stdin)) {
+            cut(buf); trim(buf);
+            strncpy(st->arr[i].email, buf, EMAIL_LEN - 1);
+            st->arr[i].email[EMAIL_LEN - 1] = '\0';
+        }
+    }
+    if (choice == 4 || choice == 5) {
+        printf("New Phone: "); if (fgets(buf, sizeof(buf), stdin)) {
+            cut(buf); trim(buf);
+            strncpy(st->arr[i].phone, buf, PHONE_LEN - 1);
+            st->arr[i].phone[PHONE_LEN - 1] = '\0';
         }
     }
 
-    puts("Applicant not found.");
+    save_csv(st);
+    printf("Updated and saved.\n");
 }
 void delete_applicant(Store *st) {
     char q[LINE_LEN];
