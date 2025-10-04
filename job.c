@@ -184,7 +184,7 @@ void search_applicant(Store *st){
     (void)list_matches(st, num, q);
     puts("=============");
 }
-static void update_applicant(Store *st) {
+void update_applicant(Store *st) {
     char q[LINE_LEN];
     printf("Search (name or position) to update: ");
     if (!fgets(q, sizeof(q), stdin)) return;
@@ -209,7 +209,7 @@ static void update_applicant(Store *st) {
         puts("Invalid Input."); 
         return; 
     }
-    cut(q); trim(q);
+    cut(pick); trim(pick);
 
     int pick_num = atoi(pick);
     if (pick_num < 1 || pick_num > m) {
@@ -260,31 +260,44 @@ static void update_applicant(Store *st) {
 }
 void delete_applicant(Store *st) {
     char q[LINE_LEN];
-    printf("Enter applicant name to delete: ");
-    scanf(" %511[^\n]", q); //รับชื่อที่จะลบ
+    printf("Search (name or position) to update: ");
+    if (!fgets(q, sizeof(q), stdin)) return;
+    cut(q); trim(q);
 
-    int i;
-    for (i = 0; i < st->count; i++) {
-        if (strcmp(st->arr[i].name, q) == 0) { //เทียบชื่อแบบตรงๆ
-            printf("Deleting: %s | %s | %s | %s\n",
-                   st->arr[i].name,
-                   st->arr[i].position,
-                   st->arr[i].email,
-                   st->arr[i].phone);
-
-            // เลื่อนสมาชิกถัดไปทั้งหมดขึ้นมาทับ
-            for (int j = i; j < st->count - 1; j++) {
-                st->arr[j] = st->arr[j + 1];
-            }
-            st->count--;
-
-            save_csv(st);   // บันทึกกลับไฟล์ทันที
-            puts("Deleted and saved.");
-            return;
-        }
+    if (q[0] == '\0') {
+        puts("===========================================");
+        puts("Please enter a non-empty keyword to search.");
+        puts("===========================================");
+        return; 
     }
 
-    puts("Applicant not found.");
+    int num[MAX_APP];
+    puts("== Results ==");
+    int m = list_matches(st, num, q);
+    puts("=============");
+    if (m <= 0) return;
+
+    printf("Select number to delete (1-%d): ", m);
+    char pick[LINE_LEN];
+    if (!fgets(pick, sizeof(pick), stdin)){
+        puts("Invalid Input."); 
+        return; 
+    }
+    cut(pick); trim(pick);
+
+    int pick_num = atoi(pick);
+    if (pick_num < 1 || pick_num > m) {
+        puts("======================================="); 
+        printf("Invalid Input Must be between 1 and %d.\n", m); 
+        puts("=======================================");
+        return; 
+    }
+    int i = num[pick_num - 1];
+    for (int k = i; k < st->count - 1; ++k) st->arr[k] = st->arr[k + 1];
+    st->count--;
+
+    save_csv(st);
+    printf("Deleted and saved.\n");
 }
 void DisplayAll(const Store *st){
     printf("\n=== Applicants (%d) ===\n", st->count);
