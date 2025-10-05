@@ -353,7 +353,12 @@ void update_applicant(Store *st) {
 void delete_applicant(Store *st) {
     char q[LINE_LEN];
     printf("Search (name or position) to update: ");
-    if (!fgets(q, sizeof(q), stdin)) return;
+    if (!fgets(q, sizeof(q), stdin)){
+        puts("==============");
+        puts("Invalid Input");
+        puts("==============");
+        return;
+    }
     cut(q); trim(q);
 
     if (q[0] == '\0') {
@@ -372,13 +377,24 @@ void delete_applicant(Store *st) {
     printf("Select number to delete (1-%d): ", m);
     char pick[LINE_LEN];
     if (!fgets(pick, sizeof(pick), stdin)){
-        puts("Invalid Input."); 
+        puts("==============");
+        puts("Invalid Input");
+        puts("==============");
         return; 
     }
     cut(pick); trim(pick);
 
-    int pick_num = atoi(pick);
-    if (pick_num < 1 || pick_num > m) {
+    if (pick[0] == '\0') {
+        puts("===========================================");
+        puts("Please enter a non-empty keyword to delete.");
+        puts("===========================================");
+        return; 
+    }
+
+    char *endptr;
+    long choice_m = strtol(pick, &endptr, 10); 
+    int pick_num = (int)choice_m;
+    if (*endptr != '\0' || pick_num < 1 || pick_num > m) {
         puts("======================================="); 
         printf("Invalid Input Must be between 1 and %d.\n", m); 
         puts("=======================================");
