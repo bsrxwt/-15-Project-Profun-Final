@@ -208,7 +208,11 @@ void search_applicant(Store *st){
 void update_applicant(Store *st) {
     char q[LINE_LEN];
     printf("Search (name or position) to update: ");
-    if (!fgets(q, sizeof(q), stdin)) return;
+    if (!fgets(q, sizeof(q), stdin)){ 
+        puts("==============");
+        puts("Invalid Input");
+        puts("==============");
+        return;}
     cut(q); trim(q);
 
     if (q[0] == '\0') {
@@ -223,57 +227,124 @@ void update_applicant(Store *st) {
     int m = list_matches(st, num, q);
     puts("=============");
     if (m <= 0) return;
-
+//list input
     printf("Select number to update (1-%d): ", m);
     char pick[LINE_LEN];
-    if (!fgets(pick, sizeof(pick), stdin)){
-        puts("Invalid Input."); 
+    if (!fgets(pick, sizeof(pick), stdin)){ 
+        puts("==============");
+        puts("Invalid Input");
+        puts("==============");
         return; 
     }
     cut(pick); trim(pick);
-
-    int pick_num = atoi(pick);
-    if (pick_num < 1 || pick_num > m) {
+    if (pick[0] == '\0') {
+        puts("===========================================");
+        puts("Please enter a non-empty keyword to select.");
+        puts("===========================================");
+        return; 
+    }
+    char *endptr;
+    long choice_m = strtol(pick, &endptr, 10); 
+    int pick_num = (int)choice_m;
+    if (*endptr != '\0' || pick_num < 1 || pick_num > m) {
         puts("======================================="); 
         printf("Invalid Input Must be between 1 and %d.\n", m); 
         puts("=======================================");
         return; 
     }
     int i = num[pick_num - 1];
-/*Update fields+choice แก้การรับ enter CTRL+Z*/
+/*Update fields+choice แก้การรับเลขที่ไม่ใช่ 1-5*/
     printf("Update fields: 1)Name 2)Position 3)Email 4)Phone 5)All : ");
-    int choice = 0;
-    if (scanf("%d", &choice) != 1) { puts("Invalid."); return; }
-    getchar();
-/*ยังไม่ป้องกันinputที่ไม่ใช่choice 1-5*/
-    char buf[LINE_LEN];
-    if (choice == 1 || choice == 5) {
-        printf("New Name: "); if (fgets(buf, sizeof(buf), stdin)) {
-            cut(buf); trim(buf);
-            strncpy(st->arr[i].name, buf, NAME_LEN - 1);
-            st->arr[i].name[NAME_LEN - 1] = '\0';
-        }
+    char choice_str[LINE_LEN];
+    if (!fgets(choice_str, sizeof(q), stdin)){
+        puts("==============");
+        puts("Invalid Input");
+        puts("==============");
+        return;}
+    cut(choice_str); trim(choice_str);
+    if (choice_str[0] == '\0') {
+        puts("===========================================");
+        puts("Please enter a non-empty keyword to search.");
+        puts("===========================================");
+        return; 
     }
+
+    long choice_l = strtol(choice_str, &endptr, 10); 
+    int choice = (int)choice_l;
+    if (*endptr != '\0' || choice < 1 || choice > 5) {
+        puts("======================================="); 
+        puts("Invalid Input Must be between 1 and 5."); 
+        puts("=======================================");
+        return; 
+    }
+
+    char buf[LINE_LEN];
+    //update name
+    if (choice == 1 || choice == 5) {
+    printf("New Name: "); 
+        if (!fgets(buf, sizeof(buf), stdin)) {
+            puts("==============");
+            puts("Invalid Input");
+            puts("==============");
+        return;
+        }
+        cut(buf); trim(buf);
+        if(empty_add(buf)==0){
+            return;
+        }
+    strncpy(st->arr[i].name, buf, NAME_LEN - 1);
+    st->arr[i].name[NAME_LEN - 1] = '\0';
+    }
+    //update position
     if (choice == 2 || choice == 5) {
-        printf("New Position: "); if (fgets(buf, sizeof(buf), stdin)) {
+        printf("New Position: ");
+        if (!fgets(buf, sizeof(buf), stdin)) {
+            puts("==============");
+            puts("Invalid Input");
+            puts("==============");
+        return;
+        } 
             cut(buf); trim(buf);
+            if(empty_add(buf)==0){
+                return;
+            }
             strncpy(st->arr[i].position, buf, POS_LEN - 1);
             st->arr[i].position[POS_LEN - 1] = '\0';
-        }
+        
     }
+    //update email
     if (choice == 3 || choice == 5) {
-        printf("New Email: "); if (fgets(buf, sizeof(buf), stdin)) {
+        printf("New Email: ");
+        if (!fgets(buf, sizeof(buf), stdin)) {
+            puts("==============");
+            puts("Invalid Input");
+            puts("==============");
+        return;
+        } 
             cut(buf); trim(buf);
+            if(empty_add(buf)==0){
+                return;
+            }
             strncpy(st->arr[i].email, buf, EMAIL_LEN - 1);
             st->arr[i].email[EMAIL_LEN - 1] = '\0';
-        }
+        
     }
+    //update phone
     if (choice == 4 || choice == 5) {
-        printf("New Phone: "); if (fgets(buf, sizeof(buf), stdin)) {
+        printf("New Phone: ");
+        if (!fgets(buf, sizeof(buf), stdin)) {
+            puts("==============");
+            puts("Invalid Input");
+            puts("==============");
+        return;
+        }
             cut(buf); trim(buf);
+            if(empty_add(buf)==0){
+                return;
+            }
             strncpy(st->arr[i].phone, buf, PHONE_LEN - 1);
             st->arr[i].phone[PHONE_LEN - 1] = '\0';
-        }
+        
     }
 
     save_csv(st);
