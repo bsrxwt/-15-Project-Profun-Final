@@ -95,7 +95,16 @@ void save_csv(const Store *st){
     }
     fclose(f);
 }
-/*ต้องแก้ทุก input ยังรับ enter ได้*/
+//Add Structure
+int empty_add(char *buf){
+    if (buf[0] == '\0'){
+        puts("===========================================");
+        puts("Please enter a non-empty keyword to search.");
+        puts("===========================================");
+        return 0; 
+    }
+    return 1;
+}
 void add_applicant(Store *st){
     if(st->count >= MAX_APP){ //ถ้าผู้สมัครเกิน 100 คน
         printf("Storage full.\n");
@@ -107,21 +116,33 @@ void add_applicant(Store *st){
     printf("Enter Applicant Name: "); fflush(stdout);
     if (!fgets(buf, sizeof(buf), stdin)) return;
     cut(buf); trim(buf);
+    if(empty_add(buf)==0){
+        return;
+    }
     strncpy(a.name, buf, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
     // รับตำแหน่ง
     printf("Enter Job Position: "); fflush(stdout);
     if (!fgets(buf, sizeof(buf), stdin)) return;
     cut(buf); trim(buf);
+    if(empty_add(buf)==0){
+        return;
+    }
     strncpy(a.position, buf, POS_LEN - 1); a.position[POS_LEN - 1] = '\0';
     // รับอีเมล
     printf("Enter Email: "); fflush(stdout);
     if (!fgets(buf, sizeof(buf), stdin)) return;
     cut(buf); trim(buf);
+    if(empty_add(buf)==0){
+        return;
+    }
     strncpy(a.email, buf, EMAIL_LEN - 1); a.email[EMAIL_LEN - 1] = '\0';
     // รับเบอร์โทร
     printf("Enter Phone Number: "); fflush(stdout);
     if (!fgets(buf, sizeof(buf), stdin)) return;
     cut(buf); trim(buf);
+    if(empty_add(buf)==0){
+        return;
+    }
     strncpy(a.phone, buf, PHONE_LEN - 1); a.phone[PHONE_LEN - 1] = '\0';    
 //สมมติมีข้อมูลคน 2 คน count จะเป็น 2 เมื่อ add ข้อมูลจะถูกเก็บใน arr[2] และ count เพิ่มเป็น3
     st->arr[st->count++] = a;          
