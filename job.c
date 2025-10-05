@@ -323,22 +323,42 @@ void display_menu(){
     printf("8)Exit\n");   
     printf("SELECT:"); 
 }
-
 int main(){
     Store st;
     load_csv(&st);
 
     while(1){
     display_menu();
-    int i=0;
-    int c;
-    if(scanf("%d",&i)!=1){
-        puts("\nPlease input number.");
-            while ((c = getchar()) != '\n' && c != EOF) {} //ล้าง buffer เมื่อ if ทำงาน
+    char i[LINE_LEN];
+        if (!fgets(i, sizeof(i), stdin)){
+            puts("==================");
+            puts("Please choose 1-8");
+            puts("==================");
+            return 0;
+        }
+        cut(i); trim(i);
+
+        if (i[0] == '\0') {            
+            puts("==================================");
+            puts("Please enter a non-empty keyword.");
+            puts("==================================");
             continue;
-    }
-            while ((c = getchar()) != '\n' && c != EOF) {}//ล้าง \n จาก enter
-            switch (i)
+        }
+        
+        char *endptr;
+        long num_l = strtol(i, &endptr, 10); 
+        int num = (int)num_l;
+
+
+        if (*endptr != '\0' || endptr == i) {
+            puts("==================");
+            puts("Please choose 1-8");
+            puts("==================");
+            continue;
+        }
+
+    //int num = atoi(i);
+            switch (num)
             {
             case 1: 
                 add_applicant(&st);
@@ -362,7 +382,10 @@ int main(){
             case 8: 
                 puts("Bye!"); 
                 return 0;          
-            default: puts("Please choose 1-8");
+            default: 
+            puts("==================");
+            puts("Please choose 1-8");
+            puts("==================");
             }
         }
     return 0;
