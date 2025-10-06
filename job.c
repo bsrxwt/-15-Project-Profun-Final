@@ -131,6 +131,27 @@ int empty_add(char *buf){
     }
     return 1;
 }
+int get_input_and_validate(const char *prompt, char *buf, size_t size) {
+    printf("%s", prompt); 
+    fflush(stdout);
+    
+    //ตรวจสอบ EOF
+    if (!fgets(buf, size, stdin)) {
+        puts("==================");
+        puts("Input cancelled.");
+        puts("==================");
+        pause();
+        return 0; 
+    }
+    cut(buf); trim(buf);
+    
+    //ตรวจสอบค่าว่าง
+    if (empty_add(buf) == 0) {
+        pause();
+        return 0;
+    }
+    return 1; //สำเร็จ
+}
 void add_applicant(Store *st){
     clear_screen();
     if(st->count >= MAX_APP){ //ถ้าผู้สมัครเกิน 100 คน
@@ -140,51 +161,23 @@ void add_applicant(Store *st){
     Applicant a;
     //รับชื่อ
     char buf[LINE_LEN];
-    printf("Enter Applicant Name: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)){
-        pause();
-        return;
-    }
-    cut(buf); trim(buf);
-    if(empty_add(buf)==0){
-        pause();
-        return;
+    if (get_input_and_validate("Enter Applicant Name: ", buf, sizeof(buf)) == 0) {
+    return; 
     }
     strncpy(a.name, buf, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
     // รับตำแหน่ง
-    printf("Enter Job Position: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)){
-        pause();
-        return;
-    }
-    cut(buf); trim(buf);
-    if(empty_add(buf)==0){
-        pause();
-        return;
+    if (get_input_and_validate("Enter Job Position: ", buf, sizeof(buf)) == 0) {
+    return; 
     }
     strncpy(a.position, buf, POS_LEN - 1); a.position[POS_LEN - 1] = '\0';
     // รับอีเมล
-    printf("Enter Email: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)){
-        pause();
-        return;
-    }
-    cut(buf); trim(buf);
-    if(empty_add(buf)==0){
-        pause();
-        return;
+    if (get_input_and_validate("Enter Email: ", buf, sizeof(buf)) == 0) {
+    return; 
     }
     strncpy(a.email, buf, EMAIL_LEN - 1); a.email[EMAIL_LEN - 1] = '\0';
     // รับเบอร์โทร
-    printf("Enter Phone Number: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)){
-        pause();
-        return;
-    }
-    cut(buf); trim(buf);
-    if(empty_add(buf)==0){
-        pause();
-        return;
+    if (get_input_and_validate("Enter Phone Number: ", buf, sizeof(buf)) == 0) {
+    return; 
     }
     strncpy(a.phone, buf, PHONE_LEN - 1); a.phone[PHONE_LEN - 1] = '\0';    
 //สมมติมีข้อมูลคน 2 คน count จะเป็น 2 เมื่อ add ข้อมูลจะถูกเก็บใน arr[2] และ count เพิ่มเป็น3
