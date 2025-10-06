@@ -162,7 +162,41 @@ int check_for_comma(char *buf) {
     }
     return 1; //ไม่พบจุลภาค
 }
-int get_input_and_validate(const char *prompt, char *buf, size_t size) {
+int check_email_format(char *buf) {
+    char *at_sign = strchr(buf, '@');
+    //ตรวจสอบว่ามี @ มั้ย
+    if (at_sign == NULL) {
+        puts("====================================");
+        puts("Email must contain an '@' symbol.");
+        puts("====================================");
+        return 0;
+    }
+    //ตรวจสอบว่ามี @ > 1 มั้ย
+    if (strchr(at_sign + 1, '@') != NULL) {
+        puts("===========================================");
+        puts("Email cannot contain multiple '@' symbols.");
+        puts("===========================================");
+        return 0;
+    }
+    //ตรวจสอบว่ามี . ตามหลัง @ มั้ย
+    char *dot = strchr(at_sign + 1, '.');
+    if (dot == NULL || *(dot + 1) == '\0') {
+        puts("=================================");
+        puts("Email must have a valid domain.");
+        puts("=================================");
+        return 0;
+    }
+    //ตรวจสอบว่าจบด้วย . มั้ย
+    if (buf[strlen(buf) - 1] == '.') {
+        puts("====================================");
+        puts("Email cannot end with a dot ('.').");
+        puts("====================================");
+        return 0;
+    }
+
+    return 1;
+}
+int get_input_and_validate(const char *prompt, char *buf, size_t size, int (*extra_check)(char *)) {
     printf("%s", prompt); 
     fflush(stdout);
     
@@ -182,6 +216,10 @@ int get_input_and_validate(const char *prompt, char *buf, size_t size) {
     }
     //ตรวจสอบค่าว่าง
     if (empty_add(buf) == 0) {
+        pause();
+        return 0;
+    }
+    if (extra_check != NULL && extra_check(buf) == 0) {
         pause();
         return 0;
     }
@@ -260,7 +298,7 @@ void add_applicant(Store *st){
     char buf_full[NAME_LEN * 3];
     //รับชื่อ
     //fisrt name
-    if (get_input_and_validate("Enter First Name: ", buf_f, sizeof(buf_f)) == 0) {
+    if (get_input_and_validate("Enter First Name: ", buf_f, sizeof(buf_f), NULL) == 0) {
         return;
     }
     if (check_name_chars(buf_f) == 0){ 
@@ -279,13 +317,17 @@ void add_applicant(Store *st){
         return; 
     }
     cut(buf_m); trim(buf_m);
+    if (buf_m[0] != '\0' && check_for_comma(buf_m) == 0) {
+        pause();
+        return;
+    }
     if (buf_m[0] != '\0' && check_name_chars(buf_m) == 0){
         pause();
         return;
     }
     remove_all_spaces(buf_m); 
     //last name
-    if (get_input_and_validate("Enter Last Name: ", buf_l, sizeof(buf_l)) == 0){
+    if (get_input_and_validate("Enter Last Name: ", buf_l, sizeof(buf_l),NULL) == 0){
         return; 
     }
     if (check_name_chars(buf_l) == 0){ 
@@ -305,14 +347,14 @@ void add_applicant(Store *st){
         return; 
     }
     // รับอีเมล
-    if (get_input_and_validate("Enter Email: ", buf, sizeof(buf)) == 0) {
-    return; 
-    }
+    if (get_input_and_validate("Enter Email: ", buf, sizeof(buf),check_email_format) == 0) { 
+        return;  
+    } 
     strncpy(a.email, buf, EMAIL_LEN - 1); a.email[EMAIL_LEN - 1] = '\0';
     // รับเบอร์โทร
-    if (get_input_and_validate("Enter Phone Number: ", buf, sizeof(buf)) == 0) {
-    return; 
-    }
+    if (get_input_and_validate("Enter Phone Number: ", buf, sizeof(buf), NULL) == 0) {
+        return;  
+    } 
     strncpy(a.phone, buf, PHONE_LEN - 1); a.phone[PHONE_LEN - 1] = '\0';    
 //สมมติมีข้อมูลคน 2 คน count จะเป็น 2 เมื่อ add ข้อมูลจะถูกเก็บใน arr[2] และ count เพิ่มเป็น3
     st->arr[st->count++] = a;          
