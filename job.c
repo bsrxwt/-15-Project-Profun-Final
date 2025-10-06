@@ -159,12 +159,23 @@ void add_applicant(Store *st){
         return;
     }
     Applicant a;
-    //รับชื่อ
     char buf[LINE_LEN];
-    if (get_input_and_validate("Enter Applicant Name: ", buf, sizeof(buf)) == 0) {
-    return; 
+    char buf_f[LINE_LEN]; //First Name
+    char buf_m[LINE_LEN]; //Middle Name
+    char buf_l[LINE_LEN]; //Last Name
+    char buf_full[NAME_LEN * 3];
+    //รับชื่อ
+    if (get_input_and_validate("Enter First Name: ", buf_f, sizeof(buf_f)) == 0) {
+        return; 
     }
-    strncpy(a.name, buf, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
+    if (get_input_and_validate("Enter Middle Name: ", buf_m, sizeof(buf_m)) == 0) {
+        return; 
+    }
+    if (get_input_and_validate("Enter Last Name: ", buf_l, sizeof(buf_l)) == 0) {
+        return; 
+    }
+    snprintf(buf_full, sizeof(buf_full), "%s %s %s", buf_f, buf_m, buf_l);
+    strncpy(a.name, buf_full, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
     // รับตำแหน่ง
     if (get_input_and_validate("Enter Job Position: ", buf, sizeof(buf)) == 0) {
     return; 
@@ -508,8 +519,6 @@ int main(){
             pause();
             continue;
         }
-
-    //int num = atoi(i);
             switch (num)
             {
             case 1: 
