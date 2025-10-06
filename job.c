@@ -2,14 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+//clear
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#else
+#endif
 //Macro
 #define CSV_FILE "applicants.csv"
 #define MAX_APP 100//จำนวนผู้สมัคร
 #define LINE_LEN 512
-#define NAME_LEN 100
-#define POS_LEN 100
-#define EMAIL_LEN 120
-#define PHONE_LEN 40
+#define NAME_LEN 50
+#define POS_LEN 40
+#define EMAIL_LEN 50
+#define PHONE_LEN 20
 //ป้องกัน buff overflow
 typedef struct {
     char name[NAME_LEN];       
@@ -22,6 +28,26 @@ typedef struct{
     Applicant arr[MAX_APP]; //array ของ Applicant
     int count;//จำนวนผู้ใช้งาน
 } Store;
+//clear
+#ifdef _WIN32
+void clear_screen()
+{
+    system("cls");
+}
+#else
+void clear_screen()
+{
+    system("clear");
+}
+#endif
+
+void pause()
+{
+    printf("\nPress Enter to continue...");
+    while (getchar() != '\n');
+    clear_screen();
+}
+
 //ตัด \n กับ \r ตอนใช้ fgets
 void cut(char *s){
     if(!s) return;
@@ -98,14 +124,15 @@ void save_csv(const Store *st){
 //Add Structure
 int empty_add(char *buf){
     if (buf[0] == '\0'){
-        puts("===========================================");
-        puts("Please enter a non-empty keyword to search.");
-        puts("===========================================");
+        puts("==================================");
+        puts("Please enter a non-empty keyword.");
+        puts("==================================");
         return 0; 
     }
     return 1;
 }
 void add_applicant(Store *st){
+    clear_screen();
     if(st->count >= MAX_APP){ //ถ้าผู้สมัครเกิน 100 คน
         printf("Storage full.\n");
         return;
@@ -117,14 +144,19 @@ void add_applicant(Store *st){
     if (!fgets(buf, sizeof(buf), stdin)) return;
     cut(buf); trim(buf);
     if(empty_add(buf)==0){
+        pause();
         return;
     }
     strncpy(a.name, buf, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
     // รับตำแหน่ง
     printf("Enter Job Position: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)) return;
+    if (!fgets(buf, sizeof(buf), stdin)){
+        pause();
+        return;
+    }
     cut(buf); trim(buf);
     if(empty_add(buf)==0){
+        pause();
         return;
     }
     strncpy(a.position, buf, POS_LEN - 1); a.position[POS_LEN - 1] = '\0';
@@ -133,6 +165,7 @@ void add_applicant(Store *st){
     if (!fgets(buf, sizeof(buf), stdin)) return;
     cut(buf); trim(buf);
     if(empty_add(buf)==0){
+        pause();
         return;
     }
     strncpy(a.email, buf, EMAIL_LEN - 1); a.email[EMAIL_LEN - 1] = '\0';
@@ -141,13 +174,17 @@ void add_applicant(Store *st){
     if (!fgets(buf, sizeof(buf), stdin)) return;
     cut(buf); trim(buf);
     if(empty_add(buf)==0){
+        pause();
         return;
     }
     strncpy(a.phone, buf, PHONE_LEN - 1); a.phone[PHONE_LEN - 1] = '\0';    
 //สมมติมีข้อมูลคน 2 คน count จะเป็น 2 เมื่อ add ข้อมูลจะถูกเก็บใน arr[2] และ count เพิ่มเป็น3
     st->arr[st->count++] = a;          
-    save_csv(st);                      
+    save_csv(st);
+    puts("=================");                     
     puts("Added and saved.");
+    puts("=================");
+    pause();
 }
 //Search Structure
 int nocase_ncmp(const char *a, const char *b, size_t n) {
@@ -420,7 +457,7 @@ void DisplayAll(const Store *st){
     printf("=======================\n\n");
 }
 void display_menu(){
-    printf("******JOB_APPLICANT******\n");
+    printf("\n******JOB_APPLICANT******\n");
     printf("1)Add\n");
     printf("2)Search\n");
     printf("3)Update\n");
@@ -429,20 +466,23 @@ void display_menu(){
     printf("6)Unit Test\n");
     printf("7)E2E Test\n");
     printf("8)Exit\n");   
-    printf("SELECT:"); 
+    printf("SELECT: "); 
 }
 int main(){
+    clear_screen();
     Store st;
     load_csv(&st);
 
     while(1){
     display_menu();
     char i[LINE_LEN];
-        if (!fgets(i, sizeof(i), stdin)){
-            puts("==================");
-            puts("Please choose 1-8");
-            puts("==================");
-            return 0;
+    fflush(stdout);
+        if (!fgets(i, sizeof(i), stdin)){            
+            printf("==================\n");
+            printf("Please choose 1-8\n");
+            printf("==================\n");
+            pause();
+            continue;
         }
         cut(i); trim(i);
 
@@ -450,6 +490,7 @@ int main(){
             puts("==================================");
             puts("Please enter a non-empty keyword.");
             puts("==================================");
+            pause();
             continue;
         }
         
@@ -462,6 +503,7 @@ int main(){
             puts("==================");
             puts("Please choose 1-8");
             puts("==================");
+            pause();
             continue;
         }
 
@@ -494,6 +536,7 @@ int main(){
             puts("==================");
             puts("Please choose 1-8");
             puts("==================");
+            pause();
             }
         }
     return 0;
