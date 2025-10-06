@@ -141,7 +141,10 @@ void add_applicant(Store *st){
     //รับชื่อ
     char buf[LINE_LEN];
     printf("Enter Applicant Name: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)) return;
+    if (!fgets(buf, sizeof(buf), stdin)){
+        pause();
+        return;
+    }
     cut(buf); trim(buf);
     if(empty_add(buf)==0){
         pause();
@@ -162,7 +165,10 @@ void add_applicant(Store *st){
     strncpy(a.position, buf, POS_LEN - 1); a.position[POS_LEN - 1] = '\0';
     // รับอีเมล
     printf("Enter Email: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)) return;
+    if (!fgets(buf, sizeof(buf), stdin)){
+        pause();
+        return;
+    }
     cut(buf); trim(buf);
     if(empty_add(buf)==0){
         pause();
@@ -171,7 +177,10 @@ void add_applicant(Store *st){
     strncpy(a.email, buf, EMAIL_LEN - 1); a.email[EMAIL_LEN - 1] = '\0';
     // รับเบอร์โทร
     printf("Enter Phone Number: "); fflush(stdout);
-    if (!fgets(buf, sizeof(buf), stdin)) return;
+    if (!fgets(buf, sizeof(buf), stdin)){
+        pause();
+        return;
+    }
     cut(buf); trim(buf);
     if(empty_add(buf)==0){
         pause();
