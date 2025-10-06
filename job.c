@@ -142,6 +142,17 @@ int check_name_chars(char *buf) {
     }
     return 1;
 }
+void remove_all_spaces(char *s) {
+    if (!s) return;
+    char *dest = s;
+    for (char *src = s; *src != '\0'; src++) {
+        // คัดลอกเฉพาะอักขระที่ไม่ใช่ช่องว่าง/tab
+        if (!isspace((unsigned char)*src)) {
+            *dest++ = *src;
+        }
+    }
+    *dest = '\0';
+}
 int check_for_comma(char *buf) {
     if (strchr(buf, ',') != NULL) {
         puts("==================================================");
@@ -197,6 +208,7 @@ void add_applicant(Store *st){
         pause();
         return;
     }
+    remove_all_spaces(buf_f); 
     //middle name
     printf("Enter Middle Name (press Enter to skip): "); 
     fflush(stdout);
@@ -212,6 +224,7 @@ void add_applicant(Store *st){
         pause();
         return;
     }
+    remove_all_spaces(buf_m); 
     //last name
     if (get_input_and_validate("Enter Last Name: ", buf_l, sizeof(buf_l)) == 0){
         return; 
@@ -220,6 +233,7 @@ void add_applicant(Store *st){
         pause();
         return;
     }
+    remove_all_spaces(buf_l);
     //รวม
     if (buf_m[0] == '\0'){
         snprintf(buf_full, sizeof(buf_full), "%s %s", buf_f, buf_l);
