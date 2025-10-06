@@ -476,7 +476,7 @@ void update_applicant(Store *st) {
     cut(pick); trim(pick);
     if (pick[0] == '\0') {
         puts("===========================================");
-        puts("Please enter a non-empty keyword to select.");
+        puts("Please enter a non-empty keyword to update.");
         puts("===========================================");
         pause();
         return; 
@@ -496,7 +496,7 @@ void update_applicant(Store *st) {
     clear_screen();
     printf("Update fields: 1)Name 2)Position 3)Email 4)Phone 5)All : ");
     char choice_str[LINE_LEN];
-    if (!fgets(choice_str, sizeof(q), stdin)){ 
+    if (!fgets(choice_str, sizeof(choice_str), stdin)){ 
         puts("==================");
         puts("Input cancelled.");
         puts("==================");
@@ -505,7 +505,7 @@ void update_applicant(Store *st) {
     cut(choice_str); trim(choice_str);
     if (choice_str[0] == '\0') {
         puts("===========================================");
-        puts("Please enter a non-empty keyword to search.");
+        puts("Invalid Input Must be between 1 and 5.");
         puts("===========================================");
         pause();
         return; 
@@ -530,11 +530,11 @@ void update_applicant(Store *st) {
 
         // First Name
         if (get_input_and_validate("New First Name: ", buf_f, sizeof(buf_f), NULL) == 0){
-            if (choice != 5) return;
+            return;
         }else {
             if (check_name_chars(buf_f) == 0) {
                 pause(); 
-                if (choice != 5) return;
+                return;
             }
         remove_all_spaces(buf_f);
         }
@@ -545,28 +545,28 @@ void update_applicant(Store *st) {
         if (!fgets(buf_m, sizeof(buf_m), stdin)) { 
             puts("Input cancelled."); 
             pause(); 
-            if (choice != 5) return;
+            return;
         }
         cut(buf_m); trim(buf_m);
         if (buf_m[0] != '\0') {
             if (check_for_comma(buf_m) == 0){ 
                 pause(); 
-                if (choice != 5) return; 
+                return; 
             }
             if (check_name_chars(buf_m) == 0){
                 pause(); 
-                if (choice != 5) return; 
+                return; 
             }
             remove_all_spaces(buf_m);
         }
 
         //Last Name
         if (get_input_and_validate("New Last Name: ", buf_l, sizeof(buf_l), NULL) == 0) {
-            if (choice != 5) return;
+            return;
         } else {
             if (check_name_chars(buf_l) == 0){
                 pause(); 
-                if (choice != 5) return; 
+                return; 
             }
             remove_all_spaces(buf_l);
         }
@@ -581,13 +581,13 @@ void update_applicant(Store *st) {
     //Position
     if (choice == 2 || choice == 5) {
         if (get_job_position_selection(st->arr[i].position, sizeof(st->arr[i].position)) == 0) {
-            if (choice != 5) return; 
+            return; 
         }
     }
     //Email
     if (choice == 3 || choice == 5) {
         if (get_input_and_validate("New Email: ", buf, sizeof(buf), check_email_format) == 0) {
-            if (choice != 5) return; 
+            return; 
         } else {
             strncpy(st->arr[i].email, buf, EMAIL_LEN - 1);
             st->arr[i].email[EMAIL_LEN - 1] = '\0';
@@ -596,7 +596,7 @@ void update_applicant(Store *st) {
     //Phone
     if (choice == 4 || choice == 5) {
         if (get_input_and_validate("New Phone Number: ", buf, sizeof(buf), check_phone_digits) == 0) {
-            if (choice != 5) return; 
+            return; 
         } else {
             strncpy(st->arr[i].phone, buf, PHONE_LEN - 1);
             st->arr[i].phone[PHONE_LEN - 1] = '\0';
