@@ -187,6 +187,65 @@ int get_input_and_validate(const char *prompt, char *buf, size_t size) {
     }
     return 1; //สำเร็จ
 }
+const char *JOB_POSITIONS[] = {
+    "Developer",
+    "Marketing",
+    "Sales",
+    "Accountant",
+    "HR Specialist"
+};
+//position structure
+#define NUM_JOB_POSITIONS (sizeof(JOB_POSITIONS) / sizeof(JOB_POSITIONS[0]))
+int get_job_position_selection(char *buf, size_t size) {
+    int choice = 0;
+    char input_buf[LINE_LEN];
+
+    puts("\n==== Job Position ====");
+    for (int i = 0; i < NUM_JOB_POSITIONS; i++){
+        printf("%d) %s\n", i + 1, JOB_POSITIONS[i]);
+    }
+    puts("======================");
+
+    while (1) {
+        printf("Enter the number of the job position: ");
+        fflush(stdout);
+
+        if (!fgets(input_buf, sizeof(input_buf), stdin)){
+            puts("==================");
+            puts("Input cancelled.");
+            puts("==================");
+            pause();
+            return 0;
+        }
+        cut(input_buf);
+        trim(input_buf);
+
+        //enter
+        if (input_buf[0] == '\0'){
+            puts("==================================");
+            puts("Please enter a non-empty keyword.");
+            puts("==================================");
+            pause();
+            return 0; 
+        }
+
+        char *endptr;
+        long choice_l = strtol(input_buf, &endptr, 10); 
+        int pick_num = (int)choice_l;
+        if (*endptr != '\0' || endptr == input_buf || pick_num < 1 || pick_num > NUM_JOB_POSITIONS) {
+            puts("======================================="); 
+            printf("Invalid Input Must be between 1 and %d.\n", NUM_JOB_POSITIONS); 
+            puts("=======================================");
+            pause();
+            return 0;
+        }
+        
+        strncpy(buf, JOB_POSITIONS[pick_num - 1], size - 1);
+        buf[size - 1] = '\0';
+        return 1;
+        }
+}
+
 void add_applicant(Store *st){
     clear_screen();
     if(st->count >= MAX_APP){ //ถ้าผู้สมัครเกิน 100 คน
@@ -242,10 +301,9 @@ void add_applicant(Store *st){
     }
     strncpy(a.name, buf_full, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
     // รับตำแหน่ง
-    if (get_input_and_validate("Enter Job Position: ", buf, sizeof(buf)) == 0) {
-    return; 
+    if (get_job_position_selection(a.position, sizeof(a.position)) == 0) {
+        return; 
     }
-    strncpy(a.position, buf, POS_LEN - 1); a.position[POS_LEN - 1] = '\0';
     // รับอีเมล
     if (get_input_and_validate("Enter Email: ", buf, sizeof(buf)) == 0) {
     return; 
