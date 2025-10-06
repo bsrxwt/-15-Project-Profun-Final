@@ -131,6 +131,17 @@ int empty_add(char *buf){
     }
     return 1;
 }
+int check_name_chars(char *buf) {
+    for (char *p = buf; *p != '\0'; p++) {
+        if (!isalpha((unsigned char)*p) && !isspace((unsigned char)*p)) {
+            puts("=========================================================");
+            puts("Error: Name contains invalid characters (numbers/symbols).");
+            puts("=========================================================");
+            return 0; 
+        }
+    }
+    return 1;
+}
 int check_for_comma(char *buf) {
     if (strchr(buf, ',') != NULL) {
         puts("==================================================");
@@ -178,16 +189,43 @@ void add_applicant(Store *st){
     char buf_l[LINE_LEN]; //Last Name
     char buf_full[NAME_LEN * 3];
     //รับชื่อ
+    //fisrt name
     if (get_input_and_validate("Enter First Name: ", buf_f, sizeof(buf_f)) == 0) {
+        return;
+    }
+    if (check_name_chars(buf_f) == 0){ 
+        pause();
+        return;
+    }
+    //middle name
+    printf("Enter Middle Name (press Enter to skip): "); 
+    fflush(stdout);
+    if (!fgets(buf_m, sizeof(buf_m), stdin)){ 
+        puts("==================");
+        puts("Input cancelled.");
+        puts("==================");
+        pause();
         return; 
     }
-    if (get_input_and_validate("Enter Middle Name: ", buf_m, sizeof(buf_m)) == 0) {
+    cut(buf_m); trim(buf_m);
+    if (buf_m[0] != '\0' && check_name_chars(buf_m) == 0){
+        pause();
+        return;
+    }
+    //last name
+    if (get_input_and_validate("Enter Last Name: ", buf_l, sizeof(buf_l)) == 0){
         return; 
     }
-    if (get_input_and_validate("Enter Last Name: ", buf_l, sizeof(buf_l)) == 0) {
-        return; 
+    if (check_name_chars(buf_l) == 0){ 
+        pause();
+        return;
     }
-    snprintf(buf_full, sizeof(buf_full), "%s %s %s", buf_f, buf_m, buf_l);
+    //รวม
+    if (buf_m[0] == '\0'){
+        snprintf(buf_full, sizeof(buf_full), "%s %s", buf_f, buf_l);
+    }else{
+        snprintf(buf_full, sizeof(buf_full), "%s %s %s", buf_f, buf_m, buf_l);
+    }
     strncpy(a.name, buf_full, NAME_LEN - 1); a.name[NAME_LEN - 1] = '\0';
     // รับตำแหน่ง
     if (get_input_and_validate("Enter Job Position: ", buf, sizeof(buf)) == 0) {
