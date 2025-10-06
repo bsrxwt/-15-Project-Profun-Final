@@ -440,12 +440,14 @@ void search_applicant(Store *st){
     pause();
 }
 void update_applicant(Store *st) {
+    clear_screen();
     char q[LINE_LEN];
     printf("Search (name or position) to update: ");
     if (!fgets(q, sizeof(q), stdin)){ 
-        puts("==============");
+        puts("==================");
         puts("Input cancelled.");
-        puts("==============");
+        puts("==================");
+        pause();
         return;}
     cut(q); trim(q);
 
@@ -453,6 +455,7 @@ void update_applicant(Store *st) {
         puts("===========================================");
         puts("Please enter a non-empty keyword to search.");
         puts("===========================================");
+        pause();
         return; 
     }
 
@@ -465,16 +468,17 @@ void update_applicant(Store *st) {
     printf("Select number to update (1-%d): ", m);
     char pick[LINE_LEN];
     if (!fgets(pick, sizeof(pick), stdin)){ 
-        puts("==============");
-        puts("Invalid Input");
-        puts("==============");
-        return; 
-    }
+        puts("==================");
+        puts("Input cancelled.");
+        puts("==================");
+        pause();
+    return;}
     cut(pick); trim(pick);
     if (pick[0] == '\0') {
         puts("===========================================");
         puts("Please enter a non-empty keyword to select.");
         puts("===========================================");
+        pause();
         return; 
     }
     char *endptr;
@@ -484,22 +488,26 @@ void update_applicant(Store *st) {
         puts("======================================="); 
         printf("Invalid Input Must be between 1 and %d.\n", m); 
         puts("=======================================");
+        pause();
         return; 
     }
     int i = num[pick_num - 1];
 /*Update fields+choice แก้การรับเลขที่ไม่ใช่ 1-5*/
+    clear_screen();
     printf("Update fields: 1)Name 2)Position 3)Email 4)Phone 5)All : ");
     char choice_str[LINE_LEN];
-    if (!fgets(choice_str, sizeof(q), stdin)){
-        puts("==============");
-        puts("Invalid Input");
-        puts("==============");
-        return;}
+    if (!fgets(choice_str, sizeof(q), stdin)){ 
+        puts("==================");
+        puts("Input cancelled.");
+        puts("==================");
+        pause();
+    return;}
     cut(choice_str); trim(choice_str);
     if (choice_str[0] == '\0') {
         puts("===========================================");
         puts("Please enter a non-empty keyword to search.");
         puts("===========================================");
+        pause();
         return; 
     }
 
@@ -509,80 +517,102 @@ void update_applicant(Store *st) {
         puts("======================================="); 
         puts("Invalid Input Must be between 1 and 5."); 
         puts("=======================================");
+        pause();
         return; 
     }
 
     char buf[LINE_LEN];
-    //update name
     if (choice == 1 || choice == 5) {
-    printf("New Name: "); 
-        if (!fgets(buf, sizeof(buf), stdin)) {
-            puts("==============");
-            puts("Invalid Input");
-            puts("==============");
-        return;
+        char buf_f[LINE_LEN]; // First Name
+        char buf_m[LINE_LEN]; // Middle Name
+        char buf_l[LINE_LEN]; // Last Name
+        char buf_full[NAME_LEN * 3];
+
+        // First Name
+        if (get_input_and_validate("New First Name: ", buf_f, sizeof(buf_f), NULL) == 0){
+            if (choice != 5) return;
+        }else {
+            if (check_name_chars(buf_f) == 0) {
+                pause(); 
+                if (choice != 5) return;
+            }
+        remove_all_spaces(buf_f);
         }
-        cut(buf); trim(buf);
-        if(empty_add(buf)==0){
-            return;
+
+        //Middle Name
+        printf("New Middle Name (press Enter to skip): "); 
+        fflush(stdout);
+        if (!fgets(buf_m, sizeof(buf_m), stdin)) { 
+            puts("Input cancelled."); 
+            pause(); 
+            if (choice != 5) return;
         }
-    strncpy(st->arr[i].name, buf, NAME_LEN - 1);
-    st->arr[i].name[NAME_LEN - 1] = '\0';
+        cut(buf_m); trim(buf_m);
+        if (buf_m[0] != '\0') {
+            if (check_for_comma(buf_m) == 0){ 
+                pause(); 
+                if (choice != 5) return; 
+            }
+            if (check_name_chars(buf_m) == 0){
+                pause(); 
+                if (choice != 5) return; 
+            }
+            remove_all_spaces(buf_m);
+        }
+
+        //Last Name
+        if (get_input_and_validate("New Last Name: ", buf_l, sizeof(buf_l), NULL) == 0) {
+            if (choice != 5) return;
+        } else {
+            if (check_name_chars(buf_l) == 0){
+                pause(); 
+                if (choice != 5) return; 
+            }
+            remove_all_spaces(buf_l);
+        }
+        if (buf_m[0] == '\0') {
+            snprintf(buf_full, sizeof(buf_full), "%s %s", buf_f, buf_l);
+        } else {
+            snprintf(buf_full, sizeof(buf_full), "%s %s %s", buf_f, buf_m, buf_l);
+        }
+        strncpy(st->arr[i].name, buf_full, NAME_LEN - 1);
+        st->arr[i].name[NAME_LEN - 1] = '\0';
     }
-    //update position
+    //Position
     if (choice == 2 || choice == 5) {
-        printf("New Position: ");
-        if (!fgets(buf, sizeof(buf), stdin)) {
-            puts("==============");
-            puts("Invalid Input");
-            puts("==============");
-        return;
-        } 
-            cut(buf); trim(buf);
-            if(empty_add(buf)==0){
-                return;
-            }
-            strncpy(st->arr[i].position, buf, POS_LEN - 1);
-            st->arr[i].position[POS_LEN - 1] = '\0';
-        
+        if (get_job_position_selection(st->arr[i].position, sizeof(st->arr[i].position)) == 0) {
+            if (choice != 5) return; 
+        }
     }
-    //update email
+    //Email
     if (choice == 3 || choice == 5) {
-        printf("New Email: ");
-        if (!fgets(buf, sizeof(buf), stdin)) {
-            puts("==============");
-            puts("Invalid Input");
-            puts("==============");
-        return;
-        } 
-            cut(buf); trim(buf);
-            if(empty_add(buf)==0){
-                return;
-            }
+        if (get_input_and_validate("New Email: ", buf, sizeof(buf), check_email_format) == 0) {
+            if (choice != 5) return; 
+        } else {
             strncpy(st->arr[i].email, buf, EMAIL_LEN - 1);
             st->arr[i].email[EMAIL_LEN - 1] = '\0';
-        
-    }
-    //update phone
-    if (choice == 4 || choice == 5) {
-        printf("New Phone: ");
-        if (!fgets(buf, sizeof(buf), stdin)) {
-            puts("==============");
-            puts("Invalid Input");
-            puts("==============");
-        return;
         }
-            cut(buf); trim(buf);
-            if(empty_add(buf)==0){
-                return;
-            }
+    }
+    //Phone
+    if (choice == 4 || choice == 5) {
+        if (get_input_and_validate("New Phone Number: ", buf, sizeof(buf), check_phone_digits) == 0) {
+            if (choice != 5) return; 
+        } else {
             strncpy(st->arr[i].phone, buf, PHONE_LEN - 1);
             st->arr[i].phone[PHONE_LEN - 1] = '\0';
-        
+        }
     }
-
+    clear_screen();
     save_csv(st);
-    printf("Updated and saved.\n");
+    puts("=================================================================================="); 
+    printf("Updated Applicant: %s | %s | %s | %s\n", 
+       st->arr[i].name, 
+       st->arr[i].position, 
+       st->arr[i].email, 
+       st->arr[i].phone);        
+    puts("==================================================================================");
+    puts("Update and saved.");
+    pause();
 }
 void delete_applicant(Store *st) {
     char q[LINE_LEN];
@@ -642,6 +672,7 @@ void delete_applicant(Store *st) {
     printf("Deleted and saved.\n");
 }
 void DisplayAll(const Store *st){
+    clear_screen();
     printf("\n=== Applicants (%d) ===\n", st->count);
     for (int i = 0; i < st->count; ++i) {
         printf("%d) %s | %s | %s | %s\n",
@@ -652,6 +683,7 @@ void DisplayAll(const Store *st){
                st->arr[i].phone);
     }
     printf("=======================\n\n");
+    pause();
 }
 void display_menu(){
     printf("\n******JOB_APPLICANT******\n");
