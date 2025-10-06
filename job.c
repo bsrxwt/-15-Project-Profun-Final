@@ -131,6 +131,15 @@ int empty_add(char *buf){
     }
     return 1;
 }
+int check_for_comma(char *buf) {
+    if (strchr(buf, ',') != NULL) {
+        puts("==================================================");
+        puts("Error: Input cannot contain a comma (',') for CSV.");
+        puts("==================================================");
+        return 0; //พบจุลภาค
+    }
+    return 1; //ไม่พบจุลภาค
+}
 int get_input_and_validate(const char *prompt, char *buf, size_t size) {
     printf("%s", prompt); 
     fflush(stdout);
@@ -144,7 +153,11 @@ int get_input_and_validate(const char *prompt, char *buf, size_t size) {
         return 0; 
     }
     cut(buf); trim(buf);
-    
+    //ตรวจสอบคอมม่า
+    if (check_for_comma(buf) == 0) {
+        pause();
+        return 0;
+    }
     //ตรวจสอบค่าว่าง
     if (empty_add(buf) == 0) {
         pause();
