@@ -283,7 +283,17 @@ int get_job_position_selection(char *buf, size_t size) {
         return 1;
         }
 }
-
+int check_phone_digits(char *buf) {
+    for (char *p = buf; *p != '\0'; p++) {
+        if (!isdigit((unsigned char)*p)) { 
+            puts("=====================================================");
+            puts("Error: Phone Number must contain only digits (0-9).");
+            puts("=====================================================");
+            return 0;
+        }
+    }
+    return 1;
+}
 void add_applicant(Store *st){
     clear_screen();
     if(st->count >= MAX_APP){ //ถ้าผู้สมัครเกิน 100 คน
@@ -352,7 +362,7 @@ void add_applicant(Store *st){
     } 
     strncpy(a.email, buf, EMAIL_LEN - 1); a.email[EMAIL_LEN - 1] = '\0';
     // รับเบอร์โทร
-    if (get_input_and_validate("Enter Phone Number: ", buf, sizeof(buf), NULL) == 0) {
+    if (get_input_and_validate("Enter Phone Number: ", buf, sizeof(buf),check_phone_digits) == 0) {
         return;  
     } 
     strncpy(a.phone, buf, PHONE_LEN - 1); a.phone[PHONE_LEN - 1] = '\0';    
