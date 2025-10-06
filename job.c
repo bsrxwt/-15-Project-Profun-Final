@@ -415,27 +415,36 @@ int list_matches(const Store *st, int *num, const char *q) {
     return m;
 }
 void search_applicant(Store *st){
+    clear_screen();
     char q[LINE_LEN];
     printf("Search by name or position: ");
-    if (!fgets(q, sizeof(q), stdin)) return;
+    if (!fgets(q, sizeof(q), stdin)){ 
+        puts("==================");
+        puts("Input cancelled.");
+        puts("==================");
+        pause();
+        return; 
+    }
     cut(q); trim(q); 
     if (q[0] == '\0') {
         puts("===========================================");
         puts("Please enter a non-empty keyword to search.");
         puts("===========================================");
+        pause();
         return; 
     }
     int num[MAX_APP];
     puts("== Results ==");
     (void)list_matches(st, num, q);
     puts("=============");
+    pause();
 }
 void update_applicant(Store *st) {
     char q[LINE_LEN];
     printf("Search (name or position) to update: ");
     if (!fgets(q, sizeof(q), stdin)){ 
         puts("==============");
-        puts("Invalid Input");
+        puts("Input cancelled.");
         puts("==============");
         return;}
     cut(q); trim(q);
