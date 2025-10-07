@@ -615,35 +615,40 @@ void update_applicant(Store *st) {
     pause();
 }
 void delete_applicant(Store *st) {
+    clear_screen();
     char q[LINE_LEN];
-    printf("Search (name or position) to update: ");
-    if (!fgets(q, sizeof(q), stdin)){
-        puts("==============");
-        puts("Invalid Input");
-        puts("==============");
-        return;
-    }
+    printf("Search (name or position) to delete: ");
+    if (!fgets(q, sizeof(q), stdin)){ 
+        puts("==================");
+        puts("Input cancelled.");
+        puts("==================");
+        pause();
+        return;}
     cut(q); trim(q);
 
     if (q[0] == '\0') {
         puts("===========================================");
-        puts("Please enter a non-empty keyword to search.");
+        puts("Please enter a non-empty keyword to delete.");
         puts("===========================================");
+        pause();
         return; 
     }
+
 
     int num[MAX_APP];
     puts("== Results ==");
     int m = list_matches(st, num, q);
     puts("=============");
+
     if (m <= 0) return;
 
     printf("Select number to delete (1-%d): ", m);
     char pick[LINE_LEN];
     if (!fgets(pick, sizeof(pick), stdin)){
         puts("==============");
-        puts("Invalid Input");
+        puts("Input cancelled.");
         puts("==============");
+        pause();
         return; 
     }
     cut(pick); trim(pick);
@@ -652,6 +657,7 @@ void delete_applicant(Store *st) {
         puts("===========================================");
         puts("Please enter a non-empty keyword to delete.");
         puts("===========================================");
+        pause();
         return; 
     }
 
@@ -662,14 +668,61 @@ void delete_applicant(Store *st) {
         puts("======================================="); 
         printf("Invalid Input Must be between 1 and %d.\n", m); 
         puts("=======================================");
+        pause();
         return; 
     }
     int i = num[pick_num - 1];
+    Applicant deleted_app = st->arr[i];
+    char confirm[LINE_LEN];
+    while (1) {
+        printf("Are you sure you want to delete applicant '%s' (Position: %s)? (Y/n): ",
+               deleted_app.name, deleted_app.position);
+
+        if (!fgets(confirm, sizeof(confirm), stdin)) {
+            puts("==================");
+            puts("Input cancelled.");
+            puts("==================");
+            pause();
+            return;
+        }
+        cut(confirm);
+        trim(confirm);
+
+        if (confirm[0] == '\0') {
+            puts("Please enter Y or n.");
+            continue;
+        }
+
+        char c = tolower((unsigned char)confirm[0]);
+        if (c == 'y') {
+            break;
+        } 
+        else if (c == 'n') {
+            puts("==================");
+            puts("Deletion cancelled.");
+            puts("==================");
+            pause();
+            return;
+        } 
+        else {
+            puts("=====================================");
+            puts("Invalid input. Please enter Y or n.");
+            puts("=====================================");
+        }
+    }
     for (int k = i; k < st->count - 1; ++k) st->arr[k] = st->arr[k + 1];
     st->count--;
-
+    clear_screen();
     save_csv(st);
-    printf("Deleted and saved.\n");
+    puts("=================================================================================="); 
+    printf("Delete Applicant: %s | %s | %s | %s\n", 
+        deleted_app.name, 
+        deleted_app.position, 
+        deleted_app.email, 
+        deleted_app.phone);        
+    puts("==================================================================================");
+    puts("Deleted and saved.");
+    pause();
 }
 void DisplayAll(const Store *st){
     clear_screen();
