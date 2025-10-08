@@ -44,7 +44,15 @@ void clear_screen()
 void pause()
 {
     printf("\nPress Enter to continue...");
-    while (getchar() != '\n');
+    fflush(stdout);
+    int ch;
+    while ((ch = getchar()) != '\n') {
+        if (ch == EOF) {
+            clearerr(stdin);
+            putchar('\n');
+            return;
+        }
+    }
     clear_screen();
 }
 
@@ -120,6 +128,81 @@ void save_csv(const Store *st){
             st->arr[i].phone);
     }
     fclose(f);
+}
+//เรียกใช้ unit test
+void run_unit_tests(Store *st); 
+
+
+Store *unit_test_create_store(void) { 
+    Store *test_store = (Store *)calloc(1, sizeof(Store));
+    return test_store;
+}
+
+void unit_test_destroy_store(Store *st) { 
+    free(st);
+}
+
+void unit_test_clear_store(Store *st) { 
+    if (!st) return;
+    memset(st, 0, sizeof(*st));
+}
+
+void unit_test_append_applicant(Store *st,
+                                const char *name,
+                                const char *position,
+                                const char *email,
+                                const char *phone) { 
+    if (!st || st->count >= MAX_APP) return;
+    Applicant *a = &st->arr[st->count++];
+    snprintf(a->name, sizeof(a->name), "%s", name ? name : "");
+    snprintf(a->position, sizeof(a->position), "%s", position ? position : "");
+    snprintf(a->email, sizeof(a->email), "%s", email ? email : "");
+    snprintf(a->phone, sizeof(a->phone), "%s", phone ? phone : "");
+}
+
+void unit_test_extract_applicant(const Store *st,
+                                 int index,
+                                 char *name,
+                                 size_t name_len,
+                                 char *position,
+                                 size_t position_len,
+                                 char *email,
+                                 size_t email_len,
+                                 char *phone,
+                                 size_t phone_len) {
+    if (!st || index < 0 || index >= st->count) return;
+    const Applicant *a = &st->arr[index];
+    if (name && name_len > 0) snprintf(name, name_len, "%s", a->name);
+    if (position && position_len > 0) snprintf(position, position_len, "%s", a->position);
+    if (email && email_len > 0) snprintf(email, email_len, "%s", a->email);
+    if (phone && phone_len > 0) snprintf(phone, phone_len, "%s", a->phone);
+}
+
+int unit_test_get_store_count(const Store *st) { 
+    return st ? st->count : 0;
+}
+
+const char *unit_test_get_csv_path(void) { 
+    return CSV_FILE;
+}
+
+
+int unit_test_get_max_app(void) { 
+    return MAX_APP;
+}
+
+
+int unit_test_get_name_capacity(void) { 
+    return NAME_LEN;
+}
+int unit_test_get_position_capacity(void) { 
+    return POS_LEN;
+}
+int unit_test_get_email_capacity(void) { 
+    return EMAIL_LEN;
+}
+int unit_test_get_phone_capacity(void) { 
+    return PHONE_LEN;
 }
 //Add Structure
 int empty_add(char *buf){
@@ -418,6 +501,7 @@ void search_applicant(Store *st){
     clear_screen();
     char q[LINE_LEN];
     printf("Search by name or position: ");
+    fflush(stdout);
     if (!fgets(q, sizeof(q), stdin)){ 
         puts("==================");
         puts("Input cancelled.");
@@ -443,6 +527,7 @@ void update_applicant(Store *st) {
     clear_screen();
     char q[LINE_LEN];
     printf("Search (name or position) to update: ");
+    fflush(stdout);
     if (!fgets(q, sizeof(q), stdin)){ 
         puts("==================");
         puts("Input cancelled.");
@@ -466,6 +551,7 @@ void update_applicant(Store *st) {
     if (m <= 0) return;
 //list input
     printf("Select number to update (1-%d): ", m);
+    fflush(stdout);
     char pick[LINE_LEN];
     if (!fgets(pick, sizeof(pick), stdin)){ 
         puts("==================");
@@ -495,6 +581,7 @@ void update_applicant(Store *st) {
 /*Update fields+choice แก้การรับเลขที่ไม่ใช่ 1-5*/
     clear_screen();
     printf("Update fields: 1)Name 2)Position 3)Email 4)Phone 5)All : ");
+    fflush(stdout);
     char choice_str[LINE_LEN];
     if (!fgets(choice_str, sizeof(choice_str), stdin)){ 
         puts("==================");
@@ -618,6 +705,7 @@ void delete_applicant(Store *st) {
     clear_screen();
     char q[LINE_LEN];
     printf("Search (name or position) to delete: ");
+    fflush(stdout);
     if (!fgets(q, sizeof(q), stdin)){ 
         puts("==================");
         puts("Input cancelled.");
@@ -643,6 +731,7 @@ void delete_applicant(Store *st) {
     if (m <= 0) return;
 
     printf("Select number to delete (1-%d): ", m);
+    fflush(stdout);
     char pick[LINE_LEN];
     if (!fgets(pick, sizeof(pick), stdin)){
         puts("==============");
@@ -677,6 +766,7 @@ void delete_applicant(Store *st) {
     while (1) {
         printf("Are you sure you want to delete applicant '%s' (Position: %s)? (Y/n): ",
                deleted_app.name, deleted_app.position);
+        fflush(stdout);
 
         if (!fgets(confirm, sizeof(confirm), stdin)) {
             puts("==================");
@@ -689,7 +779,9 @@ void delete_applicant(Store *st) {
         trim(confirm);
 
         if (confirm[0] == '\0') {
+            puts("======================");
             puts("Please enter Y or n.");
+            puts("======================");
             continue;
         }
 
@@ -748,7 +840,8 @@ void display_menu(){
     printf("6)Unit Test\n");
     printf("7)E2E Test\n");
     printf("8)Exit\n");   
-    printf("SELECT: "); 
+    printf("SELECT: ");
+    fflush(stdout);
 }
 int main(){
     clear_screen();
@@ -806,7 +899,9 @@ int main(){
                 DisplayAll(&st);
                 break;
             case 6:
-                
+                run_unit_tests(&st); // Added for unit tests.
+                clear_screen();
+                break;
             case 7:
 
             case 8: 
@@ -819,5 +914,6 @@ int main(){
             pause();
             }
         }
+    fflush(stdout);
     return 0;
 }
