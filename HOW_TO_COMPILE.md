@@ -17,11 +17,11 @@
   - แนะนำให้ติดตั้ง `valgrind` สำหรับตรวจสอบ memory leak
 - **คอมไพล์**
   ```bash
-  gcc E2E_test.c job.c unit_test.c -o e2e_test
+  gcc E2E_test.c job.c unit_test.c -o applicant
   ```
 - **รันโปรแกรม**
   ```bash
-  ./e2e_test
+  ./applicant
   ```
 - **รันและเทสต์ memory leak**
   ```
