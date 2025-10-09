@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <io.h>
 #else
+#include <unistd.h>
 #endif
 //Macro
 #define CSV_FILE "applicants.csv"
@@ -41,8 +42,20 @@ void clear_screen()
 }
 #endif
 
-void pause()
+void pause_console(void)
 {
+#ifdef _WIN32
+    int is_interactive = _isatty(_fileno(stdin));
+#else
+    int is_interactive = isatty(fileno(stdin));
+#endif
+    if (!is_interactive) {
+        putchar('\n');
+        fflush(stdout);
+        clearerr(stdin);
+        return;
+    }
+
     printf("\nPress Enter to continue...");
     fflush(stdout);
     int ch;
@@ -131,6 +144,7 @@ void save_csv(const Store *st){
 }
 //เรียกใช้ unit test
 void run_unit_tests(Store *st); 
+void run_e2e_tests(Store *st);
 
 
 Store *unit_test_create_store(void) { 
@@ -288,22 +302,22 @@ int get_input_and_validate(const char *prompt, char *buf, size_t size, int (*ext
         puts("==================");
         puts("Input cancelled.");
         puts("==================");
-        pause();
+        pause_console();
         return 0; 
     }
     cut(buf); trim(buf);
     //ตรวจสอบคอมม่า
     if (check_for_comma(buf) == 0) {
-        pause();
+        pause_console();
         return 0;
     }
     //ตรวจสอบค่าว่าง
     if (empty_add(buf) == 0) {
-        pause();
+        pause_console();
         return 0;
     }
     if (extra_check != NULL && extra_check(buf) == 0) {
-        pause();
+        pause_console();
         return 0;
     }
     return 1; //สำเร็จ
@@ -320,7 +334,6 @@ const char *JOB_POSITIONS[] = {
 int get_job_position_selection(char *buf, size_t size) {
     int choice = 0;
     char input_buf[LINE_LEN];
-
     puts("\n==== Job Position ====");
     for (int i = 0; i < NUM_JOB_POSITIONS; i++){
         printf("%d) %s\n", i + 1, JOB_POSITIONS[i]);
@@ -335,7 +348,7 @@ int get_job_position_selection(char *buf, size_t size) {
             puts("==================");
             puts("Input cancelled.");
             puts("==================");
-            pause();
+            pause_console();
             return 0;
         }
         cut(input_buf);
@@ -346,7 +359,7 @@ int get_job_position_selection(char *buf, size_t size) {
             puts("==================================");
             puts("Please enter a non-empty keyword.");
             puts("==================================");
-            pause();
+            pause_console();
             return 0; 
         }
 
@@ -357,7 +370,7 @@ int get_job_position_selection(char *buf, size_t size) {
             puts("======================================="); 
             printf("Invalid Input Must be between 1 and %d.\n", NUM_JOB_POSITIONS); 
             puts("=======================================");
-            pause();
+            pause_console();
             return 0;
         }
         
@@ -395,7 +408,7 @@ void add_applicant(Store *st){
         return;
     }
     if (check_name_chars(buf_f) == 0){ 
-        pause();
+        pause_console();
         return;
     }
     remove_all_spaces(buf_f); 
@@ -406,16 +419,16 @@ void add_applicant(Store *st){
         puts("==================");
         puts("Input cancelled.");
         puts("==================");
-        pause();
+        pause_console();
         return; 
     }
     cut(buf_m); trim(buf_m);
     if (buf_m[0] != '\0' && check_for_comma(buf_m) == 0) {
-        pause();
+        pause_console();
         return;
     }
     if (buf_m[0] != '\0' && check_name_chars(buf_m) == 0){
-        pause();
+        pause_console();
         return;
     }
     remove_all_spaces(buf_m); 
@@ -424,7 +437,7 @@ void add_applicant(Store *st){
         return; 
     }
     if (check_name_chars(buf_l) == 0){ 
-        pause();
+        pause_console();
         return;
     }
     remove_all_spaces(buf_l);
@@ -455,7 +468,7 @@ void add_applicant(Store *st){
     puts("=================");                     
     puts("Added and saved.");
     puts("=================");
-    pause();
+    pause_console();
 }
 //Search Structure
 int nocase_ncmp(const char *a, const char *b, size_t n) {
@@ -506,7 +519,7 @@ void search_applicant(Store *st){
         puts("==================");
         puts("Input cancelled.");
         puts("==================");
-        pause();
+        pause_console();
         return; 
     }
     cut(q); trim(q); 
@@ -514,14 +527,14 @@ void search_applicant(Store *st){
         puts("===========================================");
         puts("Please enter a non-empty keyword to search.");
         puts("===========================================");
-        pause();
+        pause_console();
         return; 
     }
     int num[MAX_APP];
     puts("== Results ==");
     (void)list_matches(st, num, q);
     puts("=============");
-    pause();
+    pause_console();
 }
 void update_applicant(Store *st) {
     clear_screen();
@@ -532,7 +545,7 @@ void update_applicant(Store *st) {
         puts("==================");
         puts("Input cancelled.");
         puts("==================");
-        pause();
+        pause_console();
         return;}
     cut(q); trim(q);
 
@@ -540,7 +553,7 @@ void update_applicant(Store *st) {
         puts("===========================================");
         puts("Please enter a non-empty keyword to search.");
         puts("===========================================");
-        pause();
+        pause_console();
         return; 
     }
 
@@ -557,14 +570,14 @@ void update_applicant(Store *st) {
         puts("==================");
         puts("Input cancelled.");
         puts("==================");
-        pause();
+        pause_console();
     return;}
     cut(pick); trim(pick);
     if (pick[0] == '\0') {
         puts("===========================================");
         puts("Please enter a non-empty keyword to update.");
         puts("===========================================");
-        pause();
+        pause_console();
         return; 
     }
     char *endptr;
@@ -574,7 +587,7 @@ void update_applicant(Store *st) {
         puts("======================================="); 
         printf("Invalid Input Must be between 1 and %d.\n", m); 
         puts("=======================================");
-        pause();
+        pause_console();
         return; 
     }
     int i = num[pick_num - 1];
@@ -587,14 +600,14 @@ void update_applicant(Store *st) {
         puts("==================");
         puts("Input cancelled.");
         puts("==================");
-        pause();
+        pause_console();
     return;}
     cut(choice_str); trim(choice_str);
     if (choice_str[0] == '\0') {
         puts("===========================================");
         puts("Invalid Input Must be between 1 and 5.");
         puts("===========================================");
-        pause();
+        pause_console();
         return; 
     }
 
@@ -604,7 +617,7 @@ void update_applicant(Store *st) {
         puts("======================================="); 
         puts("Invalid Input Must be between 1 and 5."); 
         puts("=======================================");
-        pause();
+        pause_console();
         return; 
     }
 
@@ -620,7 +633,7 @@ void update_applicant(Store *st) {
             return;
         }else {
             if (check_name_chars(buf_f) == 0) {
-                pause(); 
+                pause_console(); 
                 return;
             }
         remove_all_spaces(buf_f);
@@ -631,17 +644,17 @@ void update_applicant(Store *st) {
         fflush(stdout);
         if (!fgets(buf_m, sizeof(buf_m), stdin)) { 
             puts("Input cancelled."); 
-            pause(); 
+            pause_console(); 
             return;
         }
         cut(buf_m); trim(buf_m);
         if (buf_m[0] != '\0') {
             if (check_for_comma(buf_m) == 0){ 
-                pause(); 
+                pause_console(); 
                 return; 
             }
             if (check_name_chars(buf_m) == 0){
-                pause(); 
+                pause_console(); 
                 return; 
             }
             remove_all_spaces(buf_m);
@@ -652,7 +665,7 @@ void update_applicant(Store *st) {
             return;
         } else {
             if (check_name_chars(buf_l) == 0){
-                pause(); 
+                pause_console(); 
                 return; 
             }
             remove_all_spaces(buf_l);
@@ -699,7 +712,7 @@ void update_applicant(Store *st) {
        st->arr[i].phone);        
     puts("==================================================================================");
     puts("Update and saved.");
-    pause();
+    pause_console();
 }
 void delete_applicant(Store *st) {
     clear_screen();
@@ -710,7 +723,7 @@ void delete_applicant(Store *st) {
         puts("==================");
         puts("Input cancelled.");
         puts("==================");
-        pause();
+        pause_console();
         return;}
     cut(q); trim(q);
 
@@ -718,7 +731,7 @@ void delete_applicant(Store *st) {
         puts("===========================================");
         puts("Please enter a non-empty keyword to delete.");
         puts("===========================================");
-        pause();
+        pause_console();
         return; 
     }
 
@@ -737,7 +750,7 @@ void delete_applicant(Store *st) {
         puts("==============");
         puts("Input cancelled.");
         puts("==============");
-        pause();
+        pause_console();
         return; 
     }
     cut(pick); trim(pick);
@@ -746,7 +759,7 @@ void delete_applicant(Store *st) {
         puts("===========================================");
         puts("Please enter a non-empty keyword to delete.");
         puts("===========================================");
-        pause();
+        pause_console();
         return; 
     }
 
@@ -757,7 +770,7 @@ void delete_applicant(Store *st) {
         puts("======================================="); 
         printf("Invalid Input Must be between 1 and %d.\n", m); 
         puts("=======================================");
-        pause();
+        pause_console();
         return; 
     }
     int i = num[pick_num - 1];
@@ -772,7 +785,7 @@ void delete_applicant(Store *st) {
             puts("==================");
             puts("Input cancelled.");
             puts("==================");
-            pause();
+            pause_console();
             return;
         }
         cut(confirm);
@@ -793,7 +806,7 @@ void delete_applicant(Store *st) {
             puts("==================");
             puts("Deletion cancelled.");
             puts("==================");
-            pause();
+            pause_console();
             return;
         } 
         else {
@@ -814,7 +827,7 @@ void delete_applicant(Store *st) {
         deleted_app.phone);        
     puts("==================================================================================");
     puts("Deleted and saved.");
-    pause();
+    pause_console();
 }
 void DisplayAll(const Store *st){
     clear_screen();
@@ -828,7 +841,7 @@ void DisplayAll(const Store *st){
                st->arr[i].phone);
     }
     printf("=======================\n\n");
-    pause();
+    pause_console();
 }
 void display_menu(){
     printf("\n******JOB_APPLICANT******\n");
@@ -843,7 +856,10 @@ void display_menu(){
     printf("SELECT: ");
     fflush(stdout);
 }
-int main(){
+int main(void){
+    (void)setvbuf(stdout, NULL, _IONBF, 0);
+    (void)setvbuf(stdin,  NULL, _IONBF, 0);
+    (void)setvbuf(stderr, NULL, _IONBF, 0);
     clear_screen();
     Store st;
     load_csv(&st);
@@ -856,7 +872,7 @@ int main(){
             printf("==================\n");
             printf("Please choose 1-8\n");
             printf("==================\n");
-            pause();
+            pause_console();
             continue;
         }
         cut(i); trim(i);
@@ -865,7 +881,7 @@ int main(){
             puts("==================================");
             puts("Please enter a non-empty keyword.");
             puts("==================================");
-            pause();
+            pause_console();
             continue;
         }
         
@@ -878,7 +894,7 @@ int main(){
             puts("==================");
             puts("Please choose 1-8");
             puts("==================");
-            pause();
+            pause_console();
             continue;
         }
             switch (num)
@@ -903,6 +919,9 @@ int main(){
                 clear_screen();
                 break;
             case 7:
+                run_e2e_tests(&st);
+                clear_screen();
+                break;
 
             case 8: 
                 puts("Bye!"); 
@@ -911,7 +930,7 @@ int main(){
             puts("==================");
             puts("Please choose 1-8");
             puts("==================");
-            pause();
+            pause_console();
             }
         }
     fflush(stdout);

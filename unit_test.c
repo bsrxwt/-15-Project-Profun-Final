@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
 #ifdef _WIN32
 #include <windows.h>
 #include <io.h>
@@ -24,7 +23,7 @@ void add_applicant(Store *st);
 void search_applicant(Store *st);
 void load_csv(Store *st);
 void clear_screen(void);
-void pause(void);
+void pause_console(void);
 
 Store *unit_test_create_store(void);
 void unit_test_destroy_store(Store *st);
@@ -963,13 +962,13 @@ void run_unit_tests(Store *shared_store) {
     int written = snprintf(backup_path, sizeof(backup_path), "%s.unittest.bak", csv_path);
     if (written < 0 || (size_t)written >= sizeof(backup_path)) {
         puts("Cannot generate backup path. Aborting tests.");
-        pause();
+        pause_console();
         return;
     }
 
     if (!copy_file(csv_path, backup_path)) {
         puts("Cannot create backup of applicants.csv. Aborting tests.");
-        pause();
+        pause_console();
         return;
     }
 
@@ -1057,5 +1056,5 @@ void run_unit_tests(Store *shared_store) {
     }
     printf("\nResult: %d/%d tests passed.\n", passed, total);
     fflush(stdout);
-    pause();
+    pause_console();
 }
